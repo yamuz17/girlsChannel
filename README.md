@@ -1,14 +1,14 @@
-# girlsChannel (暫定)
+# girlsChannel
 
-このリポジトリは `01_暫定_20260102` を正として運用するための暫定一式です。
+このリポジトリは `99_` を実行対象として運用します。
 
 ## 目的
 ガールズチャンネルのトピック取得 → 画像生成 → 音声生成 → サムネ/preview → 組み立ての一連処理を
 DBキュー（`check_create`）で管理して自動実行します。
 
 ## フォルダ構成
-- `01_暫定_20260102/` 実行対象のスクリプト群
-- `01_暫定_20260102/.env.example` 環境変数テンプレート
+- `99_/` 実行対象のスクリプト群（番号なし）
+- `girlsChannel.env` リポジトリ共通の環境設定（Gitには含めない）
 
 ## 前提
 - Python 3.10+（推奨）
@@ -18,34 +18,61 @@ DBキュー（`check_create`）で管理して自動実行します。
 ※ 依存インストールは環境に合わせて行ってください。
 
 ## セットアップ
-1. `01_暫定_20260102/.env.example` を `01_暫定_20260102/.env` にコピー
-2. `.env` に各パスや設定値を記入
+1. `girlsChannel.env` を作成し、パスなどを記入
+2. `99_/` のスクリプトは「1つ上の階層の `girlsChannel.env`」を参照します
+3. もしリポジトリ直下に無い場合は `~/Documents/readOnly/girlsChannel.env` を参照します
 
 最低限の必須キー:
 - `DB_PATH`
 - `BASE_OUTPUT_ROOT`
 - `SCRIPTS_DIR`
 
+## 実行フロー（推奨）
+1. リスト作成（DB初期化・新規取得）
+2. パイプライン実行（動画作成）
+3. 投稿予約（YouTubeアップロード）
+
 ## 実行
+### 1) リスト作成（DBを作成/更新）
+単一カテゴリ:
 ```bash
-python3 01_暫定_20260102/01_ランチャー.py --runs 5
+python3 99_/build_list.py
+```
+複数カテゴリ:
+```bash
+python3 99_/build_list_multi.py
+```
+
+### 2) パイプライン実行（動画作成）
+```bash
+python3 99_/run_pipeline.py --runs 5
+```
+
+### 3) 投稿予約（アップロード）
+```bash
+python3 99_/投稿予約.py
 ```
 
 ## スクリプト一覧
-- `01_ランチャー.py`  全体制御
-- `02_データ取得.py`  トピック取得・DB更新
-- `03_画像生成.py`  画像生成
-- `04_音声生成.py`  音声生成
-- `05_サムネ動画作成.py`  サムネ/preview
-- `99_パーツ組み立て.py`  最終組み立て
+- `run_pipeline.py`  全体制御（1つの実行ボタンで順番に回す）
+- `fetch_data.py`  トピック取得・DB更新
+- `make_images.py`  画像生成
+- `make_audio.py`  音声生成
+- `make_preview.py`  サムネ/preview
+- `assemble_video.py`  最終組み立て
+- `build_list.py`  DB作成/更新（単一カテゴリ）
+- `build_list_multi.py`  DB作成/更新（複数カテゴリ）
+- `投稿予約.py`  投稿予約/アップロード
+- `投稿予約2.py`  投稿予約/アップロード（別仕様版）
 
-## .env の主なキー
+## girlsChannel.env の主なキー
 - DB: `DB_PATH`, `TABLE_NAME`
 - 出力: `BASE_OUTPUT_ROOT`, `SCRIPTS_DIR`
 - ステージ: `STA_02`〜`END_99`
 - Playwright: `HEADLESS_MODE`, `WAIT_TIMEOUT_MS`
 - 音声: `ENGINE_URL`, `TOTAL_VIDEO_SEC` など
+- ランチャー: `SCRIPT_02_NAME`〜`SCRIPT_99_NAME`
 
 ## 補足
-- DBや出力先は `.env` の `DB_PATH` / `BASE_OUTPUT_ROOT` で指定します。
-- 各スクリプトは `.env` から設定を読み込みます。
+- DBや出力先は `girlsChannel.env` の `DB_PATH` / `BASE_OUTPUT_ROOT` で指定します。
+- 各スクリプトは `girlsChannel.env` から設定を読み込みます。

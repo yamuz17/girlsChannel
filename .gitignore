@@ -4,6 +4,10 @@ __pycache__/
 *.pyo
 *.pyd
 .env
+girlsChannel.env
+**/girlsChannel.env
+config.local.json
+**/config.local.json
 *.db
 *.sqlite
 *.db-shm
